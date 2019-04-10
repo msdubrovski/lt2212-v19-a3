@@ -2,7 +2,7 @@ import os, sys
 import argparse
 import numpy as np
 import pandas as pd
-import pickle
+from joblib import dump, load # [pickle doesnt work on my comp] # import pickle
 from sklearn.linear_model import LogisticRegression
 
 # test.py -- Don't forget to put a reasonable amount code comments
@@ -26,3 +26,12 @@ print("Testing {}-gram model.".format(args.ngram))
 
 print("Accuracy is ...")
 print("Perplexity is...")
+
+#########
+
+#clf = load(modelfile+'.joblib') 
+
+# classifier.decision_function(X)
+# predictions = classifier.predict(X)
+# results = (predictions == y)
+# accuracy = sum(results.replace({True:1,False:0}))/len(results)
