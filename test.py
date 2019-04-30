@@ -24,14 +24,22 @@ print("Loading model from file {}.".format(args.modelfile))
 
 print("Testing {}-gram model.".format(args.ngram))
 
-print("Accuracy is ...")
-print("Perplexity is...")
+print("Computing accuracy and perplexity ...")
 
 #########
 
-#clf = load(modelfile+'.joblib') 
+# load the trained model
+clf = load(args.modelfile+'.joblib')
+# load the data and separate labels
+data = pd.read_csv(args.datafile, sep=',', delimiter=None, header=None, names=None)
+k = data.shape[1] - 1
+y = data[k] 
+X = data.drop(k, axis=1)
 
-# classifier.decision_function(X)
-# predictions = classifier.predict(X)
-# results = (predictions == y)
-# accuracy = sum(results.replace({True:1,False:0}))/len(results)
+# clf.decision_function(X)
+predictions = clf.predict(X)
+results = (predictions == y)
+accuracy = clf.score(X,y)
+#perplexity =
+print("Accuracy = ", round(accuracy, 3))
+#print("Perplexity = ", round(perplexity, 3))

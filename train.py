@@ -32,16 +32,10 @@ data = pd.read_csv(args.datafile, sep=',', delimiter=None, header=None, names=No
 k = data.shape[1] - 1
 y = data[k] 
 X = data.drop(k, axis=1)
-# ‘newton-cg’, ‘sag’, ‘saga’ and ‘lbfgs’
+# solver = 'newton-cg', 'sag', 'saga', 'lbfgs'
 classifier = LogisticRegression(multi_class= 'multinomial', solver='lbfgs')
 classifier.fit(X,y)
-
-classifier.decision_function(X)
-# predictions = classifier.predict(X)
-# results = (predictions == y)
-# accuracy = sum(results.replace({True:1,False:0}))/len(results)
 
 # safe the model to the outputfile
 # modelfile = '../EDU/S2.1-statistics/ass3_git/try_model'
 dump(classifier, args.modelfile+'.joblib') 
-#clf = load(modelfile+'.joblib') 

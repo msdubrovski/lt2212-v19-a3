@@ -101,4 +101,9 @@ if __name__ == "__main__":
         encoded_df = encoded_df.append(new_row, ignore_index=True)
         print( round(len(encoded_df)*100/ len(ngrams), 3), "%" )
 
-    encoded_df.to_csv(path_or_buf = args.outputfile, header = False, index= False)
+# split train and test and save it
+    k = encoded_df.shape[0]*(0.8)
+    train = encoded_df.loc[:k,:]
+    test = encoded_df.loc[(k+1):,:]
+    train.to_csv(path_or_buf = args.outputfile + "_train.txt", header = False, index= False)
+    test.to_csv(path_or_buf = args.outputfile + "_test.txt", header = False, index= False)
