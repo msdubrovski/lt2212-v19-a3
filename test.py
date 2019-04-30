@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 from joblib import dump, load # [pickle doesnt work on my comp] # import pickle
 from sklearn.linear_model import LogisticRegression
+from scipy.stats import entropy
 
 # test.py -- Don't forget to put a reasonable amount code comments
 # in so that we better understand what you're doing when we grade!
@@ -40,6 +41,16 @@ X = data.drop(k, axis=1)
 predictions = clf.predict(X)
 results = (predictions == y)
 accuracy = clf.score(X,y)
-#perplexity =
-print("Accuracy = ", round(accuracy, 3))
+probs = clf.predict_proba(X)
+probs_max = [max(probs[i]) for i in range(len(y))]
+perplexity = 2**(entropy(probs_max)) 
+#print("Accuracy = ", round(accuracy, 3))
 #print("Perplexity = ", round(perplexity, 3))
+
+print("| File | Options | Accu | PP | ", "\n|",
+            "--- | :---: | ---: | ---: |", "\n|",
+            args.datafile.split("_")[0], " | ",
+            args.datafile.split("_")[1][:-4], " | ",
+            round(accuracy*100, 3), " | ",
+            round(perplexity, 3), " | ")
+
