@@ -18,10 +18,10 @@ parser.add_argument("inputfile", type=str,
                     help="The file name containing the text data.")
 parser.add_argument("outputfile", type=str,
                     help="The name of the output file for the feature table.")
-parser.add_argument("-P", "--pos", type=bool, default=False,
-                    help="The file name containing the text data.")
 parser.add_argument("-P", "--pos", action="store_true",
                     help="to use POS tags")
+parser.add_argument("-A", "--along", action="store_true",
+                    help="to use POS tags ALONGSIDE")
 
 args = parser.parse_args()
 
@@ -35,56 +35,39 @@ else:
 print("Constructing {}-gram model.".format(args.ngram))
 print("Writing table to {}".format(args.outputfile))
 if args.pos:
-    print("Using POS tags.")
+    if not args.along:
+        print("Using only POS tags.")
+    else:
+        print("Using POS tags alongside words.")
+# we cant have the -A argument without the -P        
+if args.along and not args.pos:
+    sys.exit("the argument -A needs the -P argument")
 
 # open the inputfile, create the list of vocabulary
-def get_vocab(filename, pos, start, end):
+def get_vocab(filename, start, end):
     vocab = []
-    if not pos:
-        with open(filename, encoding = "utf-8") as f:
-            for line in f.readlines()[start:end]:
-                for word in line.split():
-                    try:
-                        word = re.search(r"[a-z]+", word).group(0)
-                        if word not in vocab:
-                            vocab.append(word)
-                    except:
-                        continue
-        vocab = ["<s>"] + sorted(vocab) + ["<ss>"]
-    else: # pos = True
-        with open(filename, encoding = "utf-8") as f:
-            for line in f.readlines()[start:end]:
-                for word in line.split():
-                    word_pair = word.split("/")
-                    if (re.search( r"[a-z]*", word_pair[0]).group(0) != ""):
-                        if word_pair not in vocab:
-                            vocab.append(word_pair)
-        vocab = [("<s>", "START")] + sorted(vocab) + [("<ss>", "END")]
+    with open(filename, encoding = "utf-8") as f:
+        for line in f.readlines()[start:end]:
+            for word in line.split():
+                word_pair = tuple(word.split("/"))
+                if (re.search( r"[a-z]*", word_pair[0]).group(0) != ""):
+                    if word_pair not in vocab:                            
+                        vocab.append(word_pair)
+    vocab = [("<s>", "START")] + sorted(vocab) + [("<ss>", "END")]
     return vocab
 
 # open file again, get ngrams
-def get_ngrams(filename, N, pos, start, end):
+def get_ngrams(filename, N, start, end):
     ngrams = list()
-    if not pos:
-        myregex = r"[^a-z\s]+"
-        with open(filename, encoding = "utf-8") as f:
-            for line in f.readlines()[start:end]:
-                line = ("<s> "*N + re.sub(myregex, "", line) + " <ss> "*N).split()
-                for i in range(len(line)-N+1):
-                    gram = list()
-                    for j in range(N):
-                        gram += [line[i+j]]
-                    ngrams.append(tuple(gram))
-    else: # pos = True
-        myregex = r"[^a-z]\/[^\w]*"
-        with open(filename, encoding = "utf-8") as f:
-            for line in f.readlines()[start:end]:
-                line = ("<s>/START "*N + re.sub(myregex, "", line) + " <ss>/END "*N).split()
-                for i in range(len(line)-N+1):
-                    gram = list()
-                    for j in range(N):
-                        gram += [tuple(line[i+j].split("/"))]
-                    ngrams.append(tuple(gram))
+    myregex = r"[^a-z]\/[^\w]*"
+    with open(filename, encoding = "utf-8") as f:
+        for line in f.readlines()[start:end]:
+            line = ("<s>/START "*N + re.sub(myregex, "", line) + " <ss>/END "*N).split()
+            for i in range(len(line)-N+1):
+                gram = list()
+                for j in range(N):
+                    gram += [tuple(line[i+j].split("/"))]
+                ngrams.append(tuple(gram))
     return ngrams
 
 # convert an ngram to the concatenated n-1 hot vectors + the w_n word   
@@ -98,9 +81,33 @@ def hot_encode(gram, vocab):
 
 ######### RUN
 if __name__ == "__main__":
-    vocab = get_vocab(args.inputfile, args.pos, args.startline, args.endline)
-    ngrams = get_ngrams(args.inputfile, args.ngram, args.pos, args.startline, args.endline)
+    vocab = get_vocab(args.inputfile, args.startline, args.endline)
+    ngrams = get_ngrams(args.inputfile, args.ngram, args.startline, args.endline)
 
+    ## get rid of words or pos depending on the params
+    if not args.pos:
+        vocab = list(set([word for (word, tag) in vocab]))
+        new_ngrams = list()
+        for gram in ngrams:
+            new_gram = tuple([word for (word, tag) in gram])
+            new_ngrams.append(new_gram)
+        ngrams = new_ngrams
+    elif not args.along:
+        vocab = list(set([tag for (word, tag) in vocab]))
+        new_ngrams = list()
+        for gram in ngrams:
+            new_gram = tuple([tag for (word, tag) in gram])
+            new_ngrams.append(new_gram)
+        ngrams = new_ngrams
+    else: # args.pos and args.along
+        vocab = list(set([word for (word, tag) in vocab])) + list(set([tag for (word, tag) in vocab]))
+        new_ngrams = list()
+        for gram in ngrams:
+            new_gram = tuple([item for tup in gram[:-1] for item in tup] + [gram[-1][0]+"/"+gram[-1][1]])
+            new_ngrams.append(new_gram)
+        ngrams = new_ngrams
+
+    ###   
     encoded_df = pd.DataFrame()               
     for gram in ngrams:
         new_row = pd.Series(hot_encode(gram, vocab))
