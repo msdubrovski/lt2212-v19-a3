@@ -18,12 +18,14 @@ parser.add_argument("inputfile", type=str,
                     help="The file name containing the text data.")
 parser.add_argument("outputfile", type=str,
                     help="The name of the output file for the feature table.")
+parser.add_argument("-P", "--pos", type=bool, default=False,
+                    help="The file name containing the text data.")
+parser.add_argument("-P", "--pos", action="store_true",
+                    help="to use POS tags")
 
 args = parser.parse_args()
-# luego añades el parametro para leer los POS, de momento:
-pos = False
 
-print("Loading data from file {}.".format(args.inputfile))
+print("Loading data from file {}".format(args.inputfile))
 print("Starting from line {}.".format(args.startline))
 if args.endline:
     print("Ending at line {}.".format(args.endline))
@@ -31,28 +33,33 @@ else:
     print("Ending at last line of file.")
 
 print("Constructing {}-gram model.".format(args.ngram))
-print("Writing table to {}.".format(args.outputfile))
-    
+print("Writing table to {}".format(args.outputfile))
+if args.pos:
+    print("Using POS tags.")
+
 # open the inputfile, create the list of vocabulary
 def get_vocab(filename, pos, start, end):
     vocab = []
-    with open(filename, encoding = "utf-8") as f:
-        for line in f.readlines()[start:end]:
-            for word in line.split():
-                if not pos:
+    if not pos:
+        with open(filename, encoding = "utf-8") as f:
+            for line in f.readlines()[start:end]:
+                for word in line.split():
                     try:
                         word = re.search(r"[a-z]+", word).group(0)
                         if word not in vocab:
                             vocab.append(word)
                     except:
                         continue
-                else: # pos = True
-                    word_w = re.search(r"[a-z]+", word).group(0)
-                    word_pos = re.search(r"[A-Z]+", word).group(0)
-                    word = (word_w, word_pos)
-                    if word not in vocab:
-                        vocab.append(word)
-    vocab = sorted(vocab) + ["<s>"] + ["</s>"]
+        vocab = ["<s>"] + sorted(vocab) + ["<ss>"]
+    else: # pos = True
+        with open(filename, encoding = "utf-8") as f:
+            for line in f.readlines()[start:end]:
+                for word in line.split():
+                    word_pair = word.split("/")
+                    if (re.search( r"[a-z]*", word_pair[0]).group(0) != ""):
+                        if word_pair not in vocab:
+                            vocab.append(word_pair)
+        vocab = [("<s>", "START")] + sorted(vocab) + [("<ss>", "END")]
     return vocab
 
 # open file again, get ngrams
@@ -62,11 +69,21 @@ def get_ngrams(filename, N, pos, start, end):
         myregex = r"[^a-z\s]+"
         with open(filename, encoding = "utf-8") as f:
             for line in f.readlines()[start:end]:
-                line = ("<s> <s> " + re.sub(myregex, "", line) + " </s> </s>").split()
+                line = ("<s> "*N + re.sub(myregex, "", line) + " <ss> "*N).split()
                 for i in range(len(line)-N+1):
                     gram = list()
                     for j in range(N):
                         gram += [line[i+j]]
+                    ngrams.append(tuple(gram))
+    else: # pos = True
+        myregex = r"[^a-z]\/[^\w]*"
+        with open(filename, encoding = "utf-8") as f:
+            for line in f.readlines()[start:end]:
+                line = ("<s>/START "*N + re.sub(myregex, "", line) + " <ss>/END "*N).split()
+                for i in range(len(line)-N+1):
+                    gram = list()
+                    for j in range(N):
+                        gram += [tuple(line[i+j].split("/"))]
                     ngrams.append(tuple(gram))
     return ngrams
 
@@ -81,19 +98,8 @@ def hot_encode(gram, vocab):
 
 ######### RUN
 if __name__ == "__main__":
-# vocab = get_vocab('../EDU/S2.1-statistics/ass3_git/brown_rga.txt',
-#                     False, 0, 20)
-# ngrams = get_ngrams('../EDU/S2.1-statistics/ass3_git/brown_rga.txt',
-#                     3, False, 0, 20)
-
-# encoded_df = pd.DataFrame()               
-# for gram in ngrams:
-#     new_row = pd.Series(hot_encode(gram, vocab))
-#     encoded_df = encoded_df.append(new_row, ignore_index=True)
-#     print( round(len(encoded_df)*100/ len(ngrams), 3), "%" )
-
-    vocab = get_vocab(args.inputfile, pos, args.startline, args.endline)
-    ngrams = get_ngrams(args.inputfile, args.ngram, pos, args.startline, args.endline)
+    vocab = get_vocab(args.inputfile, args.pos, args.startline, args.endline)
+    ngrams = get_ngrams(args.inputfile, args.ngram, args.pos, args.startline, args.endline)
 
     encoded_df = pd.DataFrame()               
     for gram in ngrams:
@@ -101,7 +107,7 @@ if __name__ == "__main__":
         encoded_df = encoded_df.append(new_row, ignore_index=True)
         print( round(len(encoded_df)*100/ len(ngrams), 3), "%" )
 
-# split train and test and save it
+# split train and test and save
     k = encoded_df.shape[0]*(0.8)
     train = encoded_df.loc[:k,:]
     test = encoded_df.loc[(k+1):,:]
