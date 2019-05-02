@@ -65,8 +65,13 @@ def get_ngrams(filename, N, start, end):
             line = ("<s>/START "*N + re.sub(myregex, "", line) + " <ss>/END "*N).split()
             for i in range(len(line)-N+1):
                 gram = list()
-                for j in range(N):
-                    gram += [tuple(line[i+j].split("/"))]
+                j = 0
+                while len(gram) < N:
+                    pair = tuple(line[i+j].split("/"))
+                    if len(pair)==2:
+                        if (pair[0] != "" and pair[1] != ""):
+                            gram += [tuple(line[i+j].split("/"))]
+                    j += 1
                 ngrams.append(tuple(gram))
     return ngrams
 
@@ -86,7 +91,7 @@ if __name__ == "__main__":
 
     ## get rid of words or pos depending on the params
     if not args.pos:
-        vocab = list(set([word for (word, tag) in vocab]))
+        vocab = sorted(list(set([word for (word, tag) in vocab])))
         new_ngrams = list()
         for gram in ngrams:
             new_gram = tuple([word for (word, tag) in gram])

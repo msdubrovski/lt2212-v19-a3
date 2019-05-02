@@ -25,8 +25,7 @@ print("Writing table to {}.".format(args.modelfile))
 # datafile = '../EDU/S2.1-statistics/ass3_git/try1.txt'
 data = pd.read_csv(args.datafile, sep=',', delimiter=None, header=None, names=None)
 
-# figure out how to interpret the features, !!!!!!!!!!!
-# #TODO
+# do we do anything with the features?
 
 # the last column of our data is the class label
 k = data.shape[1] - 1
