@@ -8,13 +8,12 @@ My name: Elena Rodríguez
 
 Outputfile and modelfile names should be given without the extension
 
-By adding the argument -P -A in gendata, the script uses POS tags and words, only using the -P would only use the tags.
+By adding the argument -P -A in gendata, the script uses POS tags and words, only using the -P will only use the tags.
 
 ## Reporting for Part 4
 Expected trends in results:
 - bigger improvement from N = 3 to 4 than from 4 to 5 (in the size of N-grams)
 - same-sized pieces of the text will have similar results, from a certain size.
-
 
 
 | -N | -E -S | Accuracy (%) | PerPlexity |  
@@ -40,6 +39,7 @@ I decided to treat the POS tags as new words and added them to the vocabulary, a
 | N4 | E200 S100 | PA |  25.617  |  53.752  | 
 | N5 | E200 S100 |   |  27.605  |  51.561  | 
 | N5 | E200 S100 |  PA  |  27.788  |  55.331  | 
+
 This enriched approach only slightly improves accuracy, while also icnreasing perplexity, that is, not great news. In the case of trigrams, however, the increase is important. (This should be further tested over different lines of the text.)
 
 I left the option of only building the models for POS tags, thus reducing dramatically the size of the vocabulary (possible POS tags), which gives the best accuracy scores. The increase in perplexity might be due to the small n-grams, as in the case of only using tags it might make more sense to allow longer combinations (perhaps up to a mean length of sentences).
