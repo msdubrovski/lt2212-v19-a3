@@ -1,24 +1,37 @@
 #!/bin/bash
 # call all the programs at once with the right parameters and names
 inputfile=brown_rga.txt
+# for file in ./data_N5*_train*
+# out=data_N"$N"E"$E"
+# do
+#     # gendata
+#     ## python3 gendata.py [-N N] [-S S] [-E E] inputfile outputfile
+#     # train
+#     ## python3 train.py [-N N] datafile modelfile
+#     python3 train.py -N 4 $file "$file"_model
+#     # test
+#     ## python3 test.py [-N N] datafile modelfile
+# done
+#########
 E=100
-for N in 4 5
+for N in 3 4 5
 do
-out=data_N"$N"E"$E"
-    ## python3 gendata.py [-N N] [-S S] [-E E] inputfile outputfile
-    python3 gendata.py -N $N -E $E $inputfile  $out
-    python3 gendata.py -N $N -S $E -E $((E*2)) $inputfile  "$out"S
-    python3 gendata.py -N $N -E $E - P $inputfile  "$out"P
-    python3 gendata.py -N $N -S $E -E $((E*2)) -P $inputfile  "$out"SP
-    python3 gendata.py -N $N -E $E -P - A $inputfile  "$out"PA
-    python3 gendata.py -N $N -S $E -E $((E*2)) -P -A $inputfile  "$out"SPA
+    # gendata
+    #outputfile=./data/data
+    python3 gendata.py -N $N [-S S] -E $E $inputfile data_N"$N"E"$E"
+    python3 gendata.py -N $N -S $E -E -E $((E*2)) $inputfile data_N"$N"E"$E"S
+    python3 gendata.py -N $N [-S S] -E $E -P -A $inputfile data_N"$N"E"$E"PA
+    python3 gendata.py -N $N -S $E -E -E $((E*2)) -P -A $inputfile data_N"$N"E"$E"SPA
+done
+
+for file in ./data/*_train.txt
     # train
     ## python3 train.py [-N N] datafile modelfile
-    #python3 train.py -N $N "$out"S_train.txt "$out"model
-    #python3 train.py -N $N "$out"_train.txt "$out"model
-    # test
-    ## python3 test.py [-N N] datafile modelfile
-    #python3 test.py -N $N "$out"_test.txt "$out"model
-    #python3 test.py -N $N "$out"S_test.txt "$out"model
+    python3 train.py -N 3 $file "$file"_model
+done
 
+for file in ./data/*_test.txt
+# test
+    ## python3 test.py [-N N] datafile modelfile
+    python3 test.py -N 3 $file "$file"_model
 done
