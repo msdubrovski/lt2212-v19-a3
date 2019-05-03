@@ -18,9 +18,9 @@ for N in 3 4 5
 do
     # gendata
     #outputfile=./data/data
-    python3 gendata.py -N $N [-S S] -E $E $inputfile data_N"$N"E"$E"
+    python3 gendata.py -N $N -E $E $inputfile data_N"$N"E"$E"
     python3 gendata.py -N $N -S $E -E -E $((E*2)) $inputfile data_N"$N"E"$E"S
-    python3 gendata.py -N $N [-S S] -E $E -P -A $inputfile data_N"$N"E"$E"PA
+    python3 gendata.py -N $N -E $E -P -A $inputfile data_N"$N"E"$E"PA
     python3 gendata.py -N $N -S $E -E -E $((E*2)) -P -A $inputfile data_N"$N"E"$E"SPA
 done
 
