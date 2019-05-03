@@ -12,8 +12,10 @@ By adding the argument -P -A in gendata, the script uses POS tags and words, onl
 
 ## Reporting for Part 4
 Expected trends in results:
-- bigger improvement from N = 3 to 4 than from 4 to 5 (in the size of N-grams)
+- improvement (higer accuracy, lower perplexity) when increasing size of the N-grams and/or size of the text.
+- bigger improvement from N = 3 to 4 than from 4 to 5
 - same-sized pieces of the text will have similar results, from a certain size.
+
 
 
 | -N | -E -S | Accuracy (%) | PerPlexity |  
