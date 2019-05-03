@@ -1,6 +1,6 @@
 #!/bin/bash
 # call all the programs at once with the right parameters and names
-inputfile=brown_rga.txt
+# inputfile=brown_rga.txt
 # for file in ./data_N5*_train*
 # out=data_N"$N"E"$E"
 # do
@@ -13,7 +13,7 @@ inputfile=brown_rga.txt
 #     ## python3 test.py [-N N] datafile modelfile
 # done
 #########
-E=100
+E=500
 for N in 3 4 5
 do
     # gendata
