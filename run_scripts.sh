@@ -1,6 +1,6 @@
 #!/bin/bash
 # call all the programs at once with the right parameters and names
-# inputfile=brown_rga.txt
+inputfile=brown_rga.txt
 # for file in ./data_N5*_train*
 # out=data_N"$N"E"$E"
 # do
